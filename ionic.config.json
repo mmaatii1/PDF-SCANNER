@@ -1,0 +1,7 @@
+{
+  "name": "PDF-SCANNER",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
