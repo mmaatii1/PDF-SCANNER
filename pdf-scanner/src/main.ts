@@ -1,3 +1,4 @@
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
@@ -19,6 +20,7 @@ import '@ionic/vue/css/text-alignment.css';
 import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
+defineCustomElements(window);
 
 /* Theme variables */
 import './theme/variables.css';

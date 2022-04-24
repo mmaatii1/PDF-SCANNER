@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'PDF-SCANNER',
+  appName: 'pdf-scanner',
   webDir: 'dist',
   bundledWebRuntime: false
 };
