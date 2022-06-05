@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { usePhotoGallery, UserPhoto } from "../composables/usePhotoGallery";
+import { usePhotoGallery, UserPhoto, } from "../composables/usePhotoGallery";
 import { defineComponent } from "vue";
 import { camera, trash, close, create } from "ionicons/icons";
 
@@ -38,6 +38,7 @@ import {
   IonTitle,
   IonContent,
   IonGrid,
+  alertController,
 } from "@ionic/vue";
 
 export default defineComponent({
@@ -54,7 +55,7 @@ export default defineComponent({
     IonGrid,
   },
   setup() {
-    const { takePhoto, deletePhoto, photos } = usePhotoGallery();
+    const { takePhoto, deletePhoto, photos, loadWorker, recognizeImage, convertJPGToPDF } = usePhotoGallery();
     const showActionSheet = async (photo: UserPhoto) => {
     const actionSheet = await actionSheetController.create({
     header: 'Photos',
@@ -75,8 +76,42 @@ export default defineComponent({
           // Nothing to do, action sheet is automatically closed
         },
       },
+      {
+        text: 'Save as PDF',
+        icon: create,
+        handler: () => {
+          presentAlertPrompt();
+        }
+      }
     ],
   });
+  const presentAlertPrompt = async () => {
+    const alert = await alertController
+      .create({
+        header: 'Enter file name',
+        inputs: [
+          {
+            name: 'pdfFileName'
+          },
+        ],
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => {
+              // Cancels action
+            },
+          },
+          {
+            text: 'Ok',
+            handler: (alertData) => {
+              convertJPGToPDF(photo, alertData.pdfFileName);
+            },
+          },
+        ],
+      });
+    return alert.present();
+  };
   await actionSheet.present();
 };
     return {
@@ -86,6 +121,9 @@ export default defineComponent({
       close,
       photos,
       showActionSheet,
+      loadWorker,
+      recognizeImage,
+      convertJPGToPDF
     };
   },
 });

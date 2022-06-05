@@ -4,11 +4,43 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Storage } from '@capacitor/storage';
 import { isPlatform } from '@ionic/vue';
 import { Capacitor } from '@capacitor/core';
+import Tesseract, { createWorker } from 'tesseract.js';
+import jsPDF from 'jspdf';
 
 const photos = ref<UserPhoto[]>([]);
 
 export function usePhotoGallery() {
   const PHOTO_STORAGE = 'photos';
+  let workerReady = false;
+  const imageURL = 'https://tesseract.projectnaptha.com/img/eng_bw.png';
+  const image = new Image();
+  image.crossOrigin = 'Anonymous';
+  image.src = imageURL;
+  let ocrResult = '';
+  let captureProgress = 0;
+  let worker = Tesseract.createWorker();
+
+  const loadWorker = async () => {
+    worker = createWorker({
+      logger: progress => {
+        console.log(progress);
+        if (progress.status == 'recognizing text') {
+          captureProgress = parseInt('' + progress.progress * 100);
+        }
+      }
+    });
+    await worker.load();
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    console.log('FINNISHED');
+    workerReady = true;
+  };
+
+  const recognizeImage = async () => {
+    const result = await worker.recognize(image);
+    console.log(result);
+    ocrResult = result.data.text;
+  };
 
   const cachePhotos = () => {
     Storage.set({
@@ -111,10 +143,21 @@ export function usePhotoGallery() {
     });
   };
 
+  const convertJPGToPDF = async (photo: UserPhoto, pdfFileName: string) => {
+    const doc = new jsPDF();
+    const imgData = photo.webviewPath!;
+    doc.addImage(imgData, 'JPEG', 15, 40, 180, 160);
+    doc.save(pdfFileName);
+  };
+  
+
   return {
     photos,
     takePhoto,
     deletePhoto,
+    loadWorker,
+    recognizeImage,
+    convertJPGToPDF
   };
 }
 
