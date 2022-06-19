@@ -58,7 +58,7 @@ export default defineComponent({
     const { takePhoto, deletePhoto, photos, loadWorker, recognizeImage, convertJPGToPDF } = usePhotoGallery();
     const showActionSheet = async (photo: UserPhoto) => {
     const actionSheet = await actionSheetController.create({
-    header: 'Photos',
+    header: 'Photo',
     buttons: [
       {
         text: 'Delete',

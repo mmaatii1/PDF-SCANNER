@@ -21,25 +21,33 @@ export function usePhotoGallery() {
   let worker = Tesseract.createWorker();
 
   const loadWorker = async () => {
-    worker = createWorker({
-      logger: progress => {
-        console.log(progress);
-        if (progress.status == 'recognizing text') {
-          captureProgress = parseInt('' + progress.progress * 100);
+    try {
+      worker = createWorker({
+        logger: progress => {
+          console.log(progress);
+          if (progress.status == 'recognizing text') {
+            captureProgress = parseInt('' + progress.progress * 100);
+          }
         }
-      }
-    });
-    await worker.load();
-    await worker.loadLanguage('eng');
-    await worker.initialize('eng');
-    console.log('FINNISHED');
-    workerReady = true;
+      });
+      await worker.load();
+      await worker.loadLanguage('eng');
+      await worker.initialize('eng');
+      console.log('FINNISHED');
+      workerReady = true;
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const recognizeImage = async () => {
-    const result = await worker.recognize(image);
-    console.log(result);
-    ocrResult = result.data.text;
+    try {
+      const result = await worker.recognize(image);
+      console.log(result);
+      ocrResult = result.data.text;
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const cachePhotos = () => {
@@ -52,17 +60,22 @@ export function usePhotoGallery() {
   watch(photos, cachePhotos);
 
   const takePhoto = async () => {
-    const photo = await Camera.getPhoto({
-      resultType: CameraResultType.Uri,
-      source: CameraSource.Camera,
-      quality: 100,
-    });
-
-    const fileName = new Date().getTime() + '.jpeg';
-    const savedFileImage = await savePicture(photo, fileName);
-
-    photos.value = [savedFileImage, ...photos.value];
+    try {
+      const photo = await Camera.getPhoto({
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera,
+        quality: 100,
+      });
+  
+      const fileName = new Date().getTime() + '.jpeg';
+      const savedFileImage = await savePicture(photo, fileName);
+  
+      photos.value = [savedFileImage, ...photos.value];
+    } catch (err) {
+      console.log(err);
+    }
   };
+
   const convertBlobToBase64 = (blob: Blob) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -132,15 +145,19 @@ export function usePhotoGallery() {
   onMounted(loadSaved);
 
   const deletePhoto = async (photo: UserPhoto) => {
-    // Remove this photo from the Photos reference data array
-    photos.value = photos.value.filter((p) => p.filepath !== photo.filepath);
-  
-    // delete photo file from filesystem
-    const filename = photo.filepath.substr(photo.filepath.lastIndexOf('/') + 1);
-    await Filesystem.deleteFile({
-      path: filename,
-      directory: Directory.Data,
-    });
+    try {
+      // Remove this photo from the Photos reference data array
+      photos.value = photos.value.filter((p) => p.filepath !== photo.filepath);
+
+      // delete photo file from filesystem
+      const filename = photo.filepath.substr(photo.filepath.lastIndexOf('/') + 1);
+      await Filesystem.deleteFile({
+        path: filename,
+        directory: Directory.Data,
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const convertJPGToPDF = async (photo: UserPhoto, pdfFileName: string) => {
